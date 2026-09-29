@@ -2,106 +2,15 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0a08"/>
 <title>Templo Dual</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect fill='%230b0a08' width='64' height='64'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-size='36'%3E◆%3C/text%3E%3C/svg%3E"/>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Source+Sans+3:wght@400;700&display=swap" rel="stylesheet"/>
-<style>
-:root{--gold:#d4b24a;--ink:#f3e6c8;--muted:#b7a58a;--line:rgba(212,178,74,.28)}
-*{box-sizing:border-box}body{margin:0;background:#0b0a08;color:var(--ink);font-family:"Source Sans 3",sans-serif;min-height:100dvh}
-h1{font-family:Cinzel,serif;font-size:clamp(2rem,7vw,4rem);margin:0 0 12px}
-.scene{width:min(1100px,calc(100% - 24px));margin:0 auto;padding:32px 0}
-.eyebrow{letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-size:.72rem}
-.lede{color:var(--muted);max-width:60ch;line-height:1.5}
-.btn{border:1px solid var(--line);background:#1b1510;color:var(--ink);padding:12px 18px;cursor:pointer;text-transform:uppercase;font-size:.82rem}
-.btn.gold{background:linear-gradient(#f0d78a,#d4b24a);color:#1a1208;font-weight:700;border-color:#ead58a}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
-.boards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:800px){.boards{grid-template-columns:1fr}}
-.board-frame{border:1px solid var(--line);background:#120e0b}
-.board-frame header{display:flex;justify-content:space-between;padding:8px 10px;border-bottom:1px solid var(--line);font-size:.85rem}
-.board{display:grid;grid-template-columns:repeat(9,1fr);gap:3px;aspect-ratio:1;padding:8px;background:#2a2016}
-.cell{aspect-ratio:1;border:0;background:#3b2e20;color:var(--ink);position:relative;cursor:pointer}
-.cell.is-wall{background:#0c0a08;cursor:default}
-.cell.is-start{background:#1d4338}.cell.is-idol{background:#4a3a16}
-.cell.is-trap{background:#6a3220}.cell.is-legal{box-shadow:inset 0 0 0 2px #f0d78a}
-.cell.is-placeable{outline:1px dashed rgba(212,178,74,.45)}
-.pawn{position:absolute;inset:28%;border-radius:50%;background:var(--gold)}
-.pawn.b{background:#5ec2a2}
-.topbar,.dock,.phase-banner{border:1px solid var(--line);padding:10px;margin:8px 0}
-.tray{display:flex;gap:6px;overflow:auto}
-.trap-btn{min-width:72px;border:1px solid var(--line);background:#18120e;color:var(--ink);padding:6px}
-.trap-btn.is-on{border-color:var(--gold)}
-.play-scene{width:min(1200px,calc(100% - 12px));margin:0 auto;padding:8px 0 24px}
-</style>
+<link rel="stylesheet" href="./css/live.css"/>
 </head>
 <body>
 <div id="app">Carregando Templo Dual…</div>
-<script>
-const L=[[1,1,1,1,3,1,1,1,1],[1,0,0,0,0,0,0,0,1],[1,0,1,0,0,0,1,0,1],[1,0,0,0,0,0,0,0,1],[1,0,0,1,0,1,0,0,1],[1,0,0,0,0,0,0,0,1],[1,0,1,0,0,0,1,0,1],[1,0,0,0,0,0,0,0,1],[1,1,1,1,2,1,1,1,1]];
-const E={c:4,r:8},R={c:4,r:0};
-const M=[{n:"Poente",p:"Sacerdote do Poente",x:"Explorador do Poente"},{n:"Nascente",p:"Sacerdotisa da Nascente",x:"Exploradora da Nascente"}];
-const T={spikes:["Espinhos","⚔",1,1],darts:["Dardos","➶",1,1],snakes:["Serpentes","~",1,1],axe:["Machado","⚒",1,1],pit:["Fosso","◉",1,1],sand:["Areia","∴",1,0],collapse:["Laje","▣",2,1],boulder:["Pedra","●",2,2]};
-const O=Object.keys(T);
-const k=(c,r)=>c+","+r;
-const walk=(c,r)=>c>=0&&r>=0&&c<9&&r<9&&L[r][c]!==1;
-const bud=r=>2+Math.floor((r-1)/2), mv=r=>6+Math.floor((r-1)/2);
-function P(id){return{id,lives:3,relics:0,wounds:0,camp:{...E}}}
-function TM(){return{traps:new Map(),blocked:new Set()}}
-let S={scene:"title",round:1,phase:"place",actor:0,sel:"spikes",pts:2,stun:false,run:null,players:[P(0),P(1)],temples:[TM(),TM()],kind:"place"};
-const app=document.getElementById("app");
-const $=s=>document.querySelector(s);
-function go(sc){S.scene=sc;paint()}
-function paint(){
- if(S.scene==="title"){app.innerHTML='<section class="scene"><p class="eyebrow">DUAS ERAS \u00b7 UM IDOLO</p><h1>Templo Dual</h1><p class="lede">O mesmo santuario asteca, fendido no tempo. Numa era voce arma as armadilhas. Na outra, tenta roubar a reliquia.</p><div class="actions"><button class="btn gold" id="a">Mesmo aparelho</button><button class="btn" id="b">Como se joga</button></div></section>';
-  $("#a").onclick=start;$("#b").onclick=()=>go("rules");return}
- if(S.scene==="rules"){app.innerHTML='<section class="scene"><p class="eyebrow">CODICE</p><h1>Duas linhas do tempo</h1><p class="lede">Poente arma a esquerda e explora a direita. Nascente faz o inverso. Armadilhas novas ficam ocultas. 6 eras. Vence quem tiver mais vidas.</p><div class="actions"><button class="btn gold" id="a">Comecar</button><button class="btn" id="b">Voltar</button></div></section>';
-  $("#a").onclick=start;$("#b").onclick=()=>go("title");return}
- if(S.scene==="pass"){const m=M[S.actor];const pl=S.kind==="place";
-  app.innerHTML='<section class="scene"><p class="eyebrow">ERA '+S.round+' / 6</p><h1>'+(pl?m.p:m.x)+'</h1><p class="lede">Passe o aparelho para <strong>'+m.n+'</strong>.</p><button class="btn gold" id="a">Estou pronto</button></section>';
-  $("#a").onclick=()=>go("play");return}
- if(S.scene==="end"){const w=dec();
-  app.innerHTML='<section class="scene"><p class="eyebrow">VEREDITO</p><h1>'+(w==null?"Empate ancestral":M[w].n+" prevalece")+'</h1><p class="lede">Poente '+S.players[0].lives+' vidas / '+S.players[0].relics+' reliquias \u00b7 Nascente '+S.players[1].lives+' / '+S.players[1].relics+'</p><button class="btn gold" id="a">Nova expedicao</button></section>';
-  $("#a").onclick=start;return}
- view()}
-function dec(){const[a,b]=S.players;if(a.lives!==b.lives)return a.lives>b.lives?0:1;if(a.relics!==b.relics)return a.relics>b.relics?0:1;return null}
-function start(){S={scene:"pass",round:1,phase:"place",actor:0,sel:"spikes",pts:bud(1),stun:false,run:null,players:[P(0),P(1)],temples:[TM(),TM()],kind:"place"};paint()}
-function view(){
- app.innerHTML='<section class="play-scene"><div class="topbar"><strong>Templo Dual</strong> \u00b7 Era '+S.round+'/6 \u00b7 '+M[0].n+' '+S.players[0].lives+'v '+S.players[0].relics+'r \u00b7 '+M[1].n+' '+S.players[1].lives+'v '+S.players[1].relics+'r</div><div class="phase-banner" id="st"></div><div class="boards">'+fr(0)+fr(1)+'</div><div class="dock"><div class="tray" id="tr"></div><div class="actions"><button class="btn" id="sk">Guardar pontos</button><button class="btn gold" id="cf">Confirmar</button></div></div></section>';
- bd(0);bd(1);ref();
- $("#sk").onclick=()=>{if(S.phase==="place"){S.pts=0;ok()}};
- $("#cf").onclick=ok}
-function fr(i){return '<section class="board-frame"><header><span>Templo '+(i?"da Nascente":"do Poente")+'</span></header><div class="board" id="b'+i+'"></div></section>'}
-function bd(i){const r=document.getElementById("b"+i);r.innerHTML="";
- for(let y=0;y<9;y++)for(let x=0;x<9;x++){const b=document.createElement("button");b.className="cell";b.dataset.c=x;b.dataset.r=y;b.onclick=()=>cl(i,x,y);r.appendChild(b)}}
-function cl(o,c,r){if(S.phase==="place"){if(o!==S.actor)return;pl(c,r);return}if(S.phase==="run"&&S.run&&o===1-S.run.w)mo(c,r)}
-function pl(c,r){if(!walk(c,r)||L[r][c]===2||L[r][c]===3)return;const tm=S.temples[S.actor];if(tm.traps.has(k(c,r))||tm.blocked.has(k(c,r)))return;const d=T[S.sel];if(d[2]>S.pts)return;tm.traps.set(k(c,r),{id:S.sel,sh:false});S.pts-=d[2];ref()}
-function br(w){S.phase="run";S.actor=w;S.stun=false;const p=S.players[w],tm=S.temples[1-w];const camp=p.camp&&walk(p.camp.c,p.camp.r)&&!tm.blocked.has(k(p.camp.c,p.camp.r))?p.camp:E;S.run={w,c:camp.c,r:camp.r,left:mv(S.round),dead:false,got:false}}
-function mo(c,r){const u=S.run;if(!u||u.dead||u.got||u.left<=0||S.stun)return;if(Math.abs(c-u.c)+Math.abs(r-u.r)!==1)return;const tm=S.temples[1-u.w];if(!walk(c,r)||tm.blocked.has(k(c,r)))return;u.c=c;u.r=r;u.left--;
- const tr=tm.traps.get(k(c,r));if(tr&&!tr.sh){const d=T[tr.id];tr.sh=true;const p=S.players[u.w];if(d[3]){p.wounds+=d[3];p.lives=Math.max(0,p.lives-d[3]);if(!p.lives){u.dead=true;u.left=0}}if(tr.id==="pit")S.stun=true;if(tr.id==="sand")u.left=0;if(tr.id==="collapse"){tm.blocked.add(k(c,r));tm.traps.delete(k(c,r))}}
- if(!u.dead&&c===R.c&&r===R.r){u.got=true;u.left=0;S.players[u.w].relics++}ref()}
-function done(){const u=S.run;return u&&(u.dead||u.got||(u.left<=0&&!S.stun))}
-function ok(){if(S.phase==="place"){if(S.actor===0){S.actor=1;S.pts=bud(S.round);S.sel="spikes";S.kind="place";go("pass")}else{br(0);S.kind="run";go("pass")}return}
- if(!done()&&!S.stun)return;if(S.stun){S.stun=false;if(S.run)S.run.left=Math.max(0,S.run.left-1)}
- const u=S.run,p=S.players[u.w];p.camp=u.dead||u.got?{...E}:{c:u.c,r:u.r};
- if(u.w===0){br(1);S.kind="run";go("pass");return}S.run=null;
- if(S.round>=6){go("end");return}S.round++;S.phase="place";S.actor=0;S.pts=bud(S.round);S.sel="spikes";S.kind="place";go("pass")}
-function ref(){
- const st=$("#st"),tr=$("#tr"),cf=$("#cf"),sk=$("#sk");
- if(S.phase==="place"){st.innerHTML="<strong>"+M[S.actor].p+"</strong> \u2014 pontos "+S.pts;
-  tr.innerHTML=O.map(id=>{const d=T[id];return '<button class="trap-btn '+(S.sel===id?"is-on":"")+'" data-id="'+id+'" '+(d[2]>S.pts?"disabled":"")+'>'+d[1]+' '+d[0]+' '+d[2]+'</button>'}).join("");
-  tr.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>{S.sel=b.dataset.id;ref()});
-  sk.hidden=S.pts<=0;cf.disabled=false;cf.textContent=S.pts>0?"Encerrar preparacao":"Passar o templo"}
- else{const u=S.run,m=M[u.w];st.innerHTML=u.got?m.x+" segura o idolo.":u.dead?m.x+" caiu.":m.x+" \u2014 passos "+u.left;
-  tr.innerHTML="";sk.hidden=true;cf.disabled=!done()&&!S.stun;cf.textContent=u.got?"Sair com o idolo":u.dead?"Aceitar a queda":"Recuar"}
- pb()}
-function pb(){for(let i=0;i<2;i++){const root=document.getElementById("b"+i),tm=S.temples[i];
- const priest=S.phase==="place"&&S.actor===i, runner=S.phase==="run"&&S.run&&1-S.run.w===i;
- [...root.children].forEach(el=>{const c=+el.dataset.c,r=+el.dataset.r,tile=L[r][c],tr=tm.traps.get(k(c,r)),bl=tm.blocked.has(k(c,r)),sh=tr&&(priest||tr.sh);
- el.className="cell";el.disabled=tile===1;el.classList.toggle("is-wall",tile===1);el.classList.toggle("is-start",tile===2);el.classList.toggle("is-idol",tile===3);el.classList.toggle("is-trap",!!sh);el.classList.toggle("is-placeable",priest&&tile===0&&!tr&&!bl);
- if(runner&&S.run){const legal=Math.abs(c-S.run.c)+Math.abs(r-S.run.r)===1&&walk(c,r)&&!bl;el.classList.toggle("is-legal",legal&&!S.run.dead&&!S.run.got&&S.run.left>0&&!S.stun)}
- el.textContent=tile===3?"\u25c6":tile===2?"\u25a3":bl?"x":sh?T[tr.id][1]:"";
- if(runner&&S.run&&S.run.c===c&&S.run.r===r){const s=document.createElement("span");s.className="pawn"+(S.run.w?" b":"");el.appendChild(s)}})}}
-paint();
-</script>
+<script src="./js/live.js" defer></script>
 </body>
 </html>
