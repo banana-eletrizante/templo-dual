@@ -852,9 +852,6 @@ button:disabled {
 .dust {
   z-index: 0;
 }
-.dust ~ * {
-  position: relative;
-}
 .fx {
   z-index: 100;
 }
